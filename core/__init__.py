@@ -103,9 +103,8 @@ class OneBlock:
     # One Time Open key
     otok: str
 
-    transaction_hash: str
-
-    init_wallet_signature: str
+    # transaction_hash: str
+    # init_wallet_signature: str
 
     magic: str
 
