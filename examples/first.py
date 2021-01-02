@@ -11,7 +11,7 @@ import datetime
 __author__ = 'pavel'
 __maintainer__ = 'pavel'
 __credits__ = ['pavel', ]
-__copyright__ = "Cybertonica LLC, London, 2021"
+__copyright__ = "LGPL"
 __status__ = 'Development'
 __version__ = '20210102'
 
