@@ -3,6 +3,8 @@ second.py
 
 Пример создания блокчейнов вокруг каждой купюры
 
+См ~/examples/data/blockchain_500.json
+
 created by pavel in pavel as 1/2/21
 Проект odc-poc
 """
