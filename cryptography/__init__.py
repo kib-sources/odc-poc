@@ -57,25 +57,29 @@ def signature(hex_hash: str, privkey: str) -> str:
 
     _privkey = rsa.PrivateKey.load_pkcs1(privkey.encode())
 
-    message = bytearray.fromhex(hex_hash)
+    _hash = bytes(bytearray.fromhex(hex_hash))
 
-    hex_signature = rsa.encrypt(message, _privkey).hex()
+    hex_signature = rsa.sign(_hash, _privkey, 'SHA-256').hex()
+
     return hex_signature
 
 
-def check_signature(hex_hash: str, hex_signature: str, publickey: str) -> bool:
+def verify_signature(hex_hash: str, hex_signature: str, publickey: str) -> bool:
     assert len(hex_hash) == 64
     _publickey = rsa.PublicKey.load_pkcs1(publickey.encode())
 
-    _signature = bytearray.fromhex(hex_signature)
+    _hash = bytes(bytearray.fromhex(hex_hash))
+    _signature = bytes(bytearray.fromhex(hex_signature))
 
-    _check_hex_hash = rsa.decrypt(_signature, _publickey).hex()
+    # _check_hex_hash = rsa.decrypt(_signature, _publickey).hex()
 
-    if _check_hex_hash == hex_hash:
+    try:
+        a = rsa.find_signature_hash(_signature, _publickey)
+        rsa.verify(_hash, _signature, _publickey)
+    except rsa.VerificationError:
+        return False
+    else:
         return True
-    return False
-
-    return message
 
 
 if __name__ == "__main__":
@@ -86,7 +90,7 @@ if __name__ == "__main__":
 
     _signature = signature(hex_hash, privkey)
     print(f'signature:{_signature}')
-    if check_signature(hex_hash, _signature, pubkey):
+    if verify_signature(hex_hash, _signature, pubkey):
         print("Correct")
     else:
         print("ERROR!")
