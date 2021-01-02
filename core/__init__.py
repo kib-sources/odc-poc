@@ -21,8 +21,19 @@ from dataclasses import dataclass
 
 from time import sleep
 
+from uuid import UUID
+
 # https://www.iban.com/currency-codes
 RUSSIAN_RUBLE = 643
+
+
+def epoch2datetime(epoch: int):
+    return datetime.datetime.utcfromtimestamp(epoch / 1000)
+
+
+def datetime2epoch(datetime_: datetime.datetime):
+    first_dt = datetime.datetime.utcfromtimestamp(0)
+    return int((datetime_ - first_dt).total_seconds() * 1000)
 
 
 @dataclass
@@ -79,6 +90,28 @@ class Banknote:
         # assert banknote.verify(bok=bok)
         return banknote
 
+
+@dataclass
+class OneBlock:
+    uuid: str
+
+    parent_uuid: str
+
+    # BankNote id
+    bnid: str
+
+    # One Time Open key
+    otok: str
+
+    transaction_hash: str
+
+    init_wallet_signature: str
+
+    magic: str
+
+    subscribe_transaction_hash: str
+
+    subscribe_transaction_signature: str
 
 
 if __name__ == "__main__":

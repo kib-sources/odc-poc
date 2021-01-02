@@ -19,7 +19,7 @@ import cryptography
 
 import datetime
 
-from typing import Optional
+from typing import Optional, Union
 
 from uuid import UUID, uuid4
 
@@ -28,16 +28,16 @@ import random
 from core import datetime2epoch
 
 
-def transaction_hash(uuid: UUID, parent_uuid: Optional[UUID], otok):
+def transaction_hash(uuid: Union[UUID, str], parent_uuid: Optional[Union[str, UUID]], otok, bnid):
     if parent_uuid:
-        _hash = cryptography.hash(str(uuid), str(parent_uuid), otok)
+        _hash = cryptography.hash(str(uuid), str(parent_uuid), otok, bnid)
     else:
-        _hash = cryptography.hash(str(uuid), otok)
+        _hash = cryptography.hash(str(uuid), otok, bnid)
     return _hash
 
 
-def subscribe_transaction_hash(uuid: UUID, magic: str):
-    return cryptography.hash(str(uuid), magic)
+def subscribe_transaction_hash(uuid: Union[UUID, str], magic: str, bnid):
+    return cryptography.hash(str(uuid), magic, bnid)
 
 
 def random_magic():
@@ -47,6 +47,7 @@ def random_magic():
         magic += str(random.randint(0, 9))
     magic = ''.join(magic)
     return magic
+
 
 class Wallet:
     # В рамках POC мы:
@@ -63,20 +64,22 @@ class Wallet:
     def sok(self):
         return self._sok
 
-    def new_block_params(self, parent_uuid: Optional[UUID] = None):
+    def new_block_params(self, bnid, parent_uuid: Optional[Union[UUID, str]] = None):
 
         otok, otpk = cryptography.init_pear()
 
         uuid = uuid4()
 
-        _transaction_hash = transaction_hash(uuid, parent_uuid, otok)
+        _transaction_hash = transaction_hash(uuid, parent_uuid, otok, bnid)
         _init_wallet_signature = cryptography.signature(_transaction_hash, self._spk)
 
-        self._bag[uuid] = otpk
+        self._bag[str(uuid)] = otpk
 
         return uuid, parent_uuid, otok, _transaction_hash, _init_wallet_signature
 
-    def subscribe(self, uuid, parent_uuid):
+    def subscribe(self, uuid: Union[UUID, str], parent_uuid: Union[UUID, str], bnid):
+        parent_uuid = str(parent_uuid)
+        uuid = str(uuid)
         if parent_uuid not in self._bag:
             raise Exception(f"Уже передан блок с uuid={parent_uuid} или данного блока никогда не было в кошельке")
 
@@ -84,7 +87,7 @@ class Wallet:
 
         magic = random_magic()
 
-        _subscribe_transaction_hash = subscribe_transaction_hash(uuid, magic)
+        _subscribe_transaction_hash = subscribe_transaction_hash(uuid, magic, bnid)
         _subscribe_transaction_signature = cryptography.signature(_subscribe_transaction_hash, otpk)
 
         # Удаляем ключ, чтобы более ни разу нельзя было подписывать
@@ -94,3 +97,8 @@ class Wallet:
         return magic, _subscribe_transaction_hash, _subscribe_transaction_signature
 
 
+def bank_subscribe(*, uuid, bpk, bnid):
+    magic = random_magic()
+    _subscribe_transaction_hash = subscribe_transaction_hash(uuid, magic, bnid)
+    _subscribe_transaction_signature = cryptography.signature(_subscribe_transaction_hash, bpk)
+    return magic, _subscribe_transaction_hash, _subscribe_transaction_signature
