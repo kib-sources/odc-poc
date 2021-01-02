@@ -54,15 +54,20 @@ class Wallet:
     #    1. Не разделяем на SDK, SIM
     #    2. Не используем фильтр блума, а храним все использованные блоки в приватном self._bag
 
-    def __init__(self, spk: str, sok: str):
+    def __init__(self, spk: str, sok: str, sok_signature):
         self._spk = spk
         self._sok = sok
+        self._sok_signature = sok_signature
         self._bag = dict()
         # self._otpk_set = dict()
 
     @property
     def sok(self):
         return self._sok
+
+    @property
+    def sok_signature(self):
+        return self._sok_signature
 
     def new_block_params(self, bnid, parent_uuid: Optional[Union[UUID, str]] = None):
 
